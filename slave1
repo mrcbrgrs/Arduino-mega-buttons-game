@@ -1,0 +1,1959 @@
+#include <Wire.h>
+
+const int knop1 = A4; 
+const int knop2 = A5; 
+const int knop3 = A6; 
+const int knop4 = A7; 
+const int knop5 = A8; 
+const int knop6 = A9; 
+const int knop7 = A10; 
+const int knop8 = A11; 
+const int knop9 = A12; 
+const int knop10 = A13; 
+const int knop11 = 44; 
+const int knop12 = 45; 
+const int knop13 = 46; 
+const int knop14 = 47; 
+const int knop15 = 48; 
+const int knop16 = 49; 
+const int knop17 = 50; 
+const int knop18 = 51; 
+const int knop19 = 52; 
+const int knop20 = 53; 
+const int groteknop1 = A0; 
+const int groteknop2 = A1; 
+const int groteknop3 = A2; 
+const int groteknop4 = A3; 
+
+const int led1 = 6; 
+const int led2 = 7; 
+const int led3 = 8; 
+const int led4 = 9;
+const int led5 = 22; 
+const int led6 = 23;
+const int led7 = 24; 
+const int led8 = 25;
+const int led9 = 26; 
+const int led10 = 27;
+const int led11 = 28; 
+const int led12 = 29;
+const int led13 = 30; 
+const int led14 = 31;
+const int led15 = 32; 
+const int led16 = 33;
+const int led17 = 34; 
+const int led18 = 35;
+const int led19 = 36; 
+const int led20 = 37;
+const int kleurled1 = 2; 
+const int kleurled2 = 3;
+const int kleurled3 = 4; 
+const int kleurled4 = 5;
+const int knopled1 = 10; 
+const int knopled2 = 11;
+const int knopled3 = 12; 
+const int knopled4 = 38;
+
+int basicKnopState = HIGH;
+
+int gameState = 0;
+int master = 0;
+int slave = 0;
+int alloff = 1;
+int turnon = 0;
+int knipper = 0;
+int knipperB = 0;
+int groteknop = 0;
+int ledcheck = 0;
+
+int blockgk1 = 0;
+int blockgk2 = 0;
+int blockgk3 = 0;
+int blockgk4 = 0;
+int blockgkall = 0;
+
+unsigned long lastDebounceKnop1 = 0; 
+unsigned long lastDebounceKnop2 = 0;
+unsigned long lastDebounceKnop3 = 0; 
+unsigned long lastDebounceKnop4 = 0;
+unsigned long lastDebounceKnop5 = 0; 
+unsigned long lastDebounceKnop6 = 0;
+unsigned long lastDebounceKnop7 = 0; 
+unsigned long lastDebounceKnop8 = 0;
+unsigned long lastDebounceKnop9 = 0; 
+unsigned long lastDebounceKnop10 = 0;
+unsigned long lastDebounceKnop11 = 0; 
+unsigned long lastDebounceKnop12 = 0;
+unsigned long lastDebounceKnop13 = 0; 
+unsigned long lastDebounceKnop14 = 0;
+unsigned long lastDebounceKnop15 = 0; 
+unsigned long lastDebounceKnop16 = 0;
+unsigned long lastDebounceKnop17 = 0; 
+unsigned long lastDebounceKnop18 = 0;
+unsigned long lastDebounceKnop19 = 0; 
+unsigned long lastDebounceKnop20 = 0; 
+unsigned long lastDebounceGroteknop1 = 0;
+unsigned long lastDebounceGroteknop2 = 0;
+unsigned long lastDebounceGroteknop3 = 0;
+unsigned long lastDebounceGroteknop4 = 0;
+
+int writing = 0;
+unsigned long lastDebounceWriting = 0;
+unsigned long lastDebounceKnipper = 0;
+unsigned long lastDebounceKnipperB = 0;
+unsigned long lastDebounceBlockgk1 = 0;
+unsigned long lastDebounceBlockgk2 = 0;
+unsigned long lastDebounceBlockgk3 = 0;
+unsigned long lastDebounceBlockgk4 = 0;
+unsigned long lastDebounceBlockgkall = 0;
+unsigned long lastDebounceWrong = 0;
+
+
+unsigned long debounceDelay = 100; 
+unsigned long writingDelay = 250; 
+unsigned long knipperDelay = 1000; 
+unsigned long knipperDelayLong = 3000; 
+
+void setup() {
+  Wire.begin(1);                // join i2c bus with address
+  Wire.onReceive(receiveEvent); // register event
+  Wire.onRequest(requestEvent);
+  Serial.begin(9600);           // start serial for output
+  
+pinMode(knop1, INPUT);
+pinMode(knop2, INPUT);
+pinMode(knop3, INPUT);
+pinMode(knop4, INPUT);
+pinMode(knop5, INPUT);
+pinMode(knop6, INPUT);
+pinMode(knop7, INPUT);
+pinMode(knop8, INPUT);
+pinMode(knop9, INPUT);
+pinMode(knop10, INPUT);
+pinMode(knop11, INPUT);
+pinMode(knop12, INPUT);
+pinMode(knop13, INPUT);
+pinMode(knop14, INPUT);
+pinMode(knop15, INPUT);
+pinMode(knop16, INPUT);
+pinMode(knop17, INPUT);
+pinMode(knop18, INPUT);
+pinMode(knop19, INPUT);
+pinMode(knop20, INPUT);
+pinMode(groteknop1, INPUT);
+pinMode(groteknop2, INPUT);
+pinMode(groteknop3, INPUT);
+pinMode(groteknop4, INPUT);
+
+digitalWrite(led1, HIGH);
+digitalWrite(led2, HIGH);
+digitalWrite(led3, HIGH);
+digitalWrite(led4, HIGH);
+digitalWrite(led5, HIGH);
+digitalWrite(led6, HIGH);
+digitalWrite(led7, HIGH);
+digitalWrite(led8, HIGH);
+digitalWrite(led9, HIGH);
+digitalWrite(led10, HIGH);
+digitalWrite(led11, HIGH);
+digitalWrite(led12, HIGH);
+digitalWrite(led13, HIGH);
+digitalWrite(led14, HIGH);
+digitalWrite(led15, HIGH);
+digitalWrite(led16, HIGH);
+digitalWrite(led17, HIGH);
+digitalWrite(led18, HIGH);
+digitalWrite(led19, HIGH);
+digitalWrite(led20, HIGH);
+digitalWrite(kleurled1, HIGH);
+digitalWrite(kleurled2, HIGH);
+digitalWrite(kleurled3, HIGH);
+digitalWrite(kleurled4, HIGH);
+digitalWrite(knopled1, HIGH);
+digitalWrite(knopled2, HIGH);
+digitalWrite(knopled3, HIGH);
+digitalWrite(knopled4, HIGH);
+
+pinMode(led1, OUTPUT);
+pinMode(led2, OUTPUT);
+pinMode(led3, OUTPUT);
+pinMode(led4, OUTPUT);
+pinMode(led5, OUTPUT);
+pinMode(led6, OUTPUT);
+pinMode(led7, OUTPUT);
+pinMode(led8, OUTPUT);
+pinMode(led9, OUTPUT);
+pinMode(led10, OUTPUT);
+pinMode(led12, OUTPUT);
+pinMode(led12, OUTPUT);
+pinMode(led13, OUTPUT);
+pinMode(led14, OUTPUT);
+pinMode(led15, OUTPUT);
+pinMode(led16, OUTPUT);
+pinMode(led17, OUTPUT);
+pinMode(led18, OUTPUT);
+pinMode(led19, OUTPUT);
+pinMode(led20, OUTPUT);
+pinMode(kleurled1, OUTPUT);
+pinMode(kleurled2, OUTPUT);
+pinMode(kleurled3, OUTPUT);
+pinMode(kleurled4, OUTPUT);
+pinMode(knopled1, OUTPUT);
+pinMode(knopled2, OUTPUT);
+pinMode(knopled3, OUTPUT);
+pinMode(knopled4, OUTPUT);
+}
+
+void loop() {
+int readingKnop1 = digitalRead(knop1);
+int readingKnop2 = digitalRead(knop2);
+int readingKnop3 = digitalRead(knop3);
+int readingKnop4 = digitalRead(knop4);
+int readingKnop5 = digitalRead(knop5);
+int readingKnop6 = digitalRead(knop6);
+int readingKnop7 = digitalRead(knop7);
+int readingKnop8 = digitalRead(knop8);
+int readingKnop9 = digitalRead(knop9);
+int readingKnop10 = digitalRead(knop10);
+int readingKnop11 = digitalRead(knop11);
+int readingKnop12 = digitalRead(knop12);
+int readingKnop13 = digitalRead(knop13);
+int readingKnop14 = digitalRead(knop14);
+int readingKnop15 = digitalRead(knop15);
+int readingKnop16 = digitalRead(knop16);
+int readingKnop17 = digitalRead(knop17);
+int readingKnop18 = digitalRead(knop18);
+int readingKnop19 = digitalRead(knop19);
+int readingKnop20 = digitalRead(knop20);
+int readingGroteknop1 = digitalRead(groteknop1);
+int readingGroteknop2 = digitalRead(groteknop2);
+int readingGroteknop3 = digitalRead(groteknop3);
+int readingGroteknop4 = digitalRead(groteknop4);
+
+ if (readingKnop1 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop1 = millis();
+  }
+
+ if (readingKnop2 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop2 = millis();
+  }
+
+ if (readingKnop3 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop3 = millis();
+  }
+
+ if (readingKnop4 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop4 = millis();
+  }
+
+ if (readingKnop5 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop5 = millis();
+  }
+
+ if (readingKnop6 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop6 = millis();
+  }
+
+ if (readingKnop7 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop7 = millis();
+  }
+
+ if (readingKnop8 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop8 = millis();
+  }
+
+ if (readingKnop9 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop9 = millis();
+  }
+
+ if (readingKnop10 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop10 = millis();
+  }
+
+ if (readingKnop11 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop11 = millis();
+  }
+
+ if (readingKnop12 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop12 = millis();
+  }
+
+ if (readingKnop13 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop13 = millis();
+  }
+
+ if (readingKnop14 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop14 = millis();
+  }
+
+ if (readingKnop15 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop15 = millis();
+  }
+
+ if (readingKnop16 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop16 = millis();
+  }
+
+ if (readingKnop17 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop17 = millis();
+  }
+
+ if (readingKnop18 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop18 = millis();
+  }
+
+ if (readingKnop19 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop19 = millis();
+  }
+
+ if (readingKnop20 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceKnop20 = millis();
+  }
+
+  if (readingGroteknop1 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceGroteknop1 = millis();
+  }
+
+ if (readingGroteknop2 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceGroteknop2 = millis();
+  }
+
+ if (readingGroteknop3 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceGroteknop3 = millis();
+  }
+
+ if (readingGroteknop4 != basicKnopState) {
+    // reset the debouncing timer
+    lastDebounceGroteknop4 = millis();
+  }
+
+int timerk1 = (millis() - lastDebounceKnop1);
+int timerk2 = (millis() - lastDebounceKnop2);
+int timerk3 = (millis() - lastDebounceKnop3);
+int timerk4 = (millis() - lastDebounceKnop4);
+int timerk5 = (millis() - lastDebounceKnop5);
+int timerk6 = (millis() - lastDebounceKnop6);
+int timerk7 = (millis() - lastDebounceKnop7);
+int timerk8 = (millis() - lastDebounceKnop8);
+int timerk9 = (millis() - lastDebounceKnop9);
+int timerk10 = (millis() - lastDebounceKnop10);
+int timerk11 = (millis() - lastDebounceKnop11);
+int timerk12 = (millis() - lastDebounceKnop12);
+int timerk13 = (millis() - lastDebounceKnop13);
+int timerk14 = (millis() - lastDebounceKnop14);
+int timerk15 = (millis() - lastDebounceKnop15);
+int timerk16 = (millis() - lastDebounceKnop16);
+int timerk17 = (millis() - lastDebounceKnop17);
+int timerk18 = (millis() - lastDebounceKnop18);
+int timerk19 = (millis() - lastDebounceKnop19);
+int timerk20 = (millis() - lastDebounceKnop20);
+int timergk1 = (millis() - lastDebounceGroteknop1);
+int timergk2 = (millis() - lastDebounceGroteknop2);
+int timergk3 = (millis() - lastDebounceGroteknop3);
+int timergk4 = (millis() - lastDebounceGroteknop4);
+int timerwrong = (millis() - lastDebounceWrong);
+
+
+int timerknipper = (millis() - lastDebounceKnipper);
+int timerknipperB = (millis() - lastDebounceKnipperB);
+
+if (master == 200){
+    gameState = 0;
+    master = 0;
+    slave = 0;
+    alloff = 1;
+    writing = 0;
+    turnon = 0;
+    knipper = 0;
+    knipperB = 0;
+    groteknop = 0;
+    blockgk1 = 0;
+    blockgk2 = 0;
+    blockgk3 = 0;
+    blockgk4 = 0;
+    blockgkall = 0;
+    ledcheck = 0;
+    Serial.println("Spel naar gameState 0...");
+  }
+
+if (master == 201){
+    gameState = 1;
+    master = 0;
+    Serial.println("Spel naar gameState 1...");
+    alloff = 1;
+    turnon = 1;
+  }
+
+if (master == 202){
+    gameState = 2;
+    master = 0;
+    Serial.println("Spel naar gameState 2...");
+    alloff = 1;
+    turnon = 2;
+  }
+
+if (master == 203){
+    gameState = 3;
+    master = 0;
+    Serial.println("Spel naar gameState 3...");
+     alloff = 1;
+    turnon = 3;
+    blockgk1 = 0;
+    blockgk2 = 0;
+    blockgk3 = 0;
+    blockgk4 = 0;
+    blockgkall = 0;
+   }
+  
+if (master == 204){
+    gameState = 4;
+    master = 0;
+    Serial.println("Spel naar gameState 4...");
+     alloff = 1;
+    turnon = 4;
+  }
+
+if (master == 205){
+    gameState = 5;
+    master = 0;
+    Serial.println("Spel naar gameState 5...");
+     alloff = 1;
+    turnon = 5;
+    blockgk1 = 0;
+    blockgk2 = 0;
+    blockgk3 = 0;
+    blockgk4 = 0;
+    blockgkall = 0;
+   }
+
+if (master == 206){
+    gameState = 6;
+    master = 0;
+    Serial.println("Spel naar gameState 6...");
+    alloff = 1;
+    turnon = 6;
+  }
+
+if (master == 207){
+    gameState = 7;
+    master = 0;
+    Serial.println("Spel naar gameState 7...");
+    alloff = 1;
+    turnon = 7;
+    blockgk1 = 0;
+    blockgk2 = 0;
+    blockgk3 = 0;
+    blockgk4 = 0;
+    blockgkall = 0;
+  }
+
+if (master == 208){
+    gameState = 8;
+    master = 0;
+    Serial.println("Spel naar gameState 8...");
+    alloff = 1;
+    turnon = 8;
+  }
+
+if (master == 209){
+    gameState = 9;
+    master = 0;
+    Serial.println("Spel naar gameState 9...");
+     alloff = 1;
+    knipper = 1;
+    lastDebounceKnipper = millis();
+  }
+
+if (blockgk1 == 1){
+  digitalWrite(knopled1, HIGH);
+   if ((millis() - lastDebounceBlockgk1)>knipperDelay){
+    digitalWrite(knopled1, LOW);
+    }
+   if ((millis() - lastDebounceBlockgk1)>knipperDelayLong){
+    blockgk1 = 0;
+   }
+}
+
+if (blockgk2 == 1){
+  digitalWrite(knopled2, HIGH);
+   if ((millis() - lastDebounceBlockgk2)>knipperDelay){
+    digitalWrite(knopled2, LOW);
+   }
+   if ((millis() - lastDebounceBlockgk2)>knipperDelayLong){
+    blockgk2 = 0;
+   }
+}
+
+if (blockgk3 == 1){
+  digitalWrite(knopled3, HIGH);
+   if ((millis() - lastDebounceBlockgk3)>knipperDelay){
+    digitalWrite(knopled3, LOW);
+   }
+   if ((millis() - lastDebounceBlockgk3)>knipperDelayLong){
+    blockgk3 = 0;
+   }
+}
+
+if (blockgk4 == 1){
+  digitalWrite(knopled4, HIGH);
+   if ((millis() - lastDebounceBlockgk4)>knipperDelay){
+    digitalWrite(knopled4, LOW);
+   }
+   if ((millis() - lastDebounceBlockgk4)>knipperDelayLong){
+    blockgk4 = 0;
+   }
+}
+
+if (blockgkall == 1){
+  digitalWrite(knopled1, HIGH);
+  digitalWrite(knopled2, HIGH);
+  digitalWrite(knopled3, HIGH);
+  digitalWrite(knopled4, HIGH);
+   if ((millis() - lastDebounceBlockgkall)>knipperDelayLong){
+    digitalWrite(knopled1, LOW);
+    digitalWrite(knopled2, LOW);
+    digitalWrite(knopled3, LOW);
+    digitalWrite(knopled4, LOW);
+    blockgkall = 0;
+   }
+}
+
+       if (knipperB == 1){
+    digitalWrite(knopled1, HIGH);
+    digitalWrite(knopled2, HIGH);
+    digitalWrite(knopled3, HIGH);
+    digitalWrite(knopled4, HIGH);
+    if (timerknipperB > knipperDelay)  {
+      knipperB = 2;
+      lastDebounceKnipperB = millis();
+     }
+  }
+
+ else if (knipperB == 2){
+       digitalWrite(knopled1, LOW);
+    digitalWrite(knopled2, LOW);
+    digitalWrite(knopled3, LOW);
+    digitalWrite(knopled4, LOW);
+    if (timerknipperB > knipperDelay)  {
+      knipperB = 1;
+      groteknop = 0;
+      lastDebounceKnipperB = millis();
+     }
+  }
+
+if (alloff == 1){
+digitalWrite(led1, HIGH);
+digitalWrite(led2, HIGH);
+digitalWrite(led3, HIGH);
+digitalWrite(led4, HIGH);
+digitalWrite(led5, HIGH);
+digitalWrite(led6, HIGH);
+digitalWrite(led7, HIGH);
+digitalWrite(led8, HIGH);
+digitalWrite(led9, HIGH);
+digitalWrite(led10, HIGH);
+digitalWrite(led11, HIGH);
+digitalWrite(led12, HIGH);
+digitalWrite(led13, HIGH);
+digitalWrite(led14, HIGH);
+digitalWrite(led15, HIGH);
+digitalWrite(led16, HIGH);
+digitalWrite(led17, HIGH);
+digitalWrite(led18, HIGH);
+digitalWrite(led19, HIGH);
+digitalWrite(led20, HIGH);
+digitalWrite(kleurled1, HIGH);
+digitalWrite(kleurled2, HIGH);
+digitalWrite(kleurled3, HIGH);
+digitalWrite(kleurled4, HIGH);
+digitalWrite(knopled1, HIGH);
+digitalWrite(knopled2, HIGH);
+digitalWrite(knopled3, HIGH);
+digitalWrite(knopled4, HIGH);
+knipperB = 0;
+alloff = 0;
+Serial.println("alle outputs zijn uit");
+}
+
+if (turnon == 1){
+ digitalWrite(led3, LOW);
+   digitalWrite(led12, LOW);
+   Serial.println("outputs van gamestate 1 zijn aan");
+   lastDebounceWrong = millis();
+   turnon = 0;
+} 
+
+if (turnon == 2){
+   digitalWrite(knopled1, LOW);
+    digitalWrite(knopled2, LOW);
+    digitalWrite(knopled3, LOW);
+    digitalWrite(knopled4, LOW);
+    lastDebounceKnipper = millis();
+   Serial.println("outputs van gamestate 2 zijn aan");
+   turnon = 0;
+   knipper = 1;
+   groteknop = 1;
+   ledcheck = 0;
+} 
+
+if (turnon == 3){
+     digitalWrite(led7, LOW);
+    digitalWrite(led10, LOW);
+    digitalWrite(led16, LOW);
+   Serial.println("outputs van gamestate 3 zijn aan");
+   turnon = 0;
+} 
+
+if (turnon == 4){
+   digitalWrite(knopled1, LOW);
+    digitalWrite(knopled2, LOW);
+    digitalWrite(knopled3, LOW);
+    digitalWrite(knopled4, LOW);
+    lastDebounceKnipper = millis();
+   Serial.println("outputs van gamestate 4 zijn aan");
+   turnon = 0;
+   knipper = 1;
+   groteknop = 1;
+   ledcheck = 0;
+} 
+
+if (turnon == 5){
+  digitalWrite(led2, LOW);
+    digitalWrite(led9, LOW);
+    digitalWrite(led18, LOW);
+    digitalWrite(led20, LOW);
+   Serial.println("outputs van gamestate 5 zijn aan");
+   turnon = 0;
+} 
+
+if (turnon == 6){
+   digitalWrite(knopled1, LOW);
+    digitalWrite(knopled2, LOW);
+    digitalWrite(knopled3, LOW);
+    digitalWrite(knopled4, LOW);
+    lastDebounceKnipper = millis();
+   Serial.println("outputs van gamestate 6 zijn aan");
+   turnon = 0;
+   knipper = 1;
+   groteknop = 1;
+   ledcheck = 0;
+} 
+
+if (turnon == 7){
+   digitalWrite(led4, LOW);
+    digitalWrite(led6, LOW);
+    digitalWrite(led13, LOW);
+    digitalWrite(led14, LOW);
+    digitalWrite(led17, LOW);
+   Serial.println("outputs van gamestate 7 zijn aan");
+   turnon = 0;
+} 
+
+if (turnon == 8){
+   digitalWrite(knopled1, LOW);
+    digitalWrite(knopled2, LOW);
+    digitalWrite(knopled3, LOW);
+    digitalWrite(knopled4, LOW);
+    lastDebounceKnipper = millis();
+   Serial.println("outputs van gamestate 8 zijn aan");
+   turnon = 0;
+   knipper = 1;
+   groteknop = 1;
+} 
+
+
+if (gameState == 0){
+
+
+}
+
+if (gameState == 1){
+
+ if (timerk13 > debounceDelay) {
+        slave = 47;
+        writing = 1;
+        Serial.println("gameState 1 - knop 13 ingedrukt");
+        lastDebounceKnop13 = millis();
+  }
+
+ if (timerk8 > debounceDelay)  {
+        slave = 81;
+        writing = 1;
+        Serial.println("gameState 1 - knop 8 ingedrukt");
+        lastDebounceKnop8 = millis();
+  }
+
+ if ((timerk1 > debounceDelay)||(timerk2 > debounceDelay)||(timerk3 > debounceDelay)||(timerk4 > debounceDelay)||(timerk5 > debounceDelay)||(timerk6 > debounceDelay)||(timerk7 > debounceDelay)||(timerk9 > debounceDelay)||(timerk10 > debounceDelay)||(timerk11 > debounceDelay)||(timerk12 > debounceDelay)||(timerk14 > debounceDelay)||(timerk15 > debounceDelay)||(timerk16 > debounceDelay)||(timerk17 > debounceDelay)||(timerk18 > debounceDelay)||(timerk19 > debounceDelay)||(timerk20 > debounceDelay)) {
+      if (timerwrong > knipperDelay){
+        slave = 101;
+        writing = 1;
+        Serial.println("gameState 1 - verkeerde knop ingedrukt");
+        lastDebounceWrong = millis();
+  }
+ }
+
+ if (master == 13){
+        digitalWrite(led3, HIGH);
+        master = 0;
+        Serial.println("gameState 1 - led 3 uitgeschakeld");
+}
+
+ if (master == 29){
+        digitalWrite(led12, HIGH);
+        master = 0;
+        Serial.println("gameState 1 - led 12 uitgeschakeld");
+}
+
+ if ((digitalRead(led3) == HIGH)&&(digitalRead(led12) == HIGH)){
+  if (ledcheck == 0){
+     slave = 121;
+        writing = 1;
+        Serial.println("gameState 1 - alle leds op S1 uit");
+        ledcheck = 1;
+  }
+  }
+
+}
+
+if (gameState == 2){
+
+  if (knipper == 1){
+    digitalWrite(kleurled2, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 2;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 2){
+    digitalWrite(kleurled2, HIGH);
+    digitalWrite(kleurled1, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 3;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+  else if (knipper == 3){
+    digitalWrite(kleurled1, HIGH);
+      digitalWrite(kleurled4, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 4;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 4){
+    digitalWrite(kleurled4, HIGH);
+    if (timerknipper > knipperDelayLong)  {
+      knipper = 1;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+   if (master == 133){
+        digitalWrite(kleurled1, HIGH);
+        digitalWrite(kleurled2, HIGH);
+        digitalWrite(kleurled3, HIGH);
+        digitalWrite(kleurled4, HIGH);
+        knipper = 0;
+        master = 0;
+        Serial.println("gameState 2 - knipperleds uitgeschakeld");
+  }
+
+  if (groteknop == 1){
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 2;
+        blockgk3 = 1;
+        lastDebounceBlockgk3 = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+        }
+  }
+
+  if (groteknop == 2){  
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 3;
+        blockgk1 = 1;
+        lastDebounceBlockgk1 = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+        }
+  }
+
+  if (groteknop == 3){
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+        groteknop = 4;
+     //   blockgkall = 1;
+     //  lastDebounceBlockgkall = millis();
+         }
+        }
+  }
+
+  if (groteknop == 4){
+    slave = 131;
+        writing = 1;
+        Serial.println("gameState 2 - knoppen voltooid");
+         lastDebounceKnipperB = millis();
+         knipperB = 1;
+         groteknop = 0;
+  }
+}
+
+if (gameState == 3){
+
+  if (timerk14 > debounceDelay) {
+        slave = 56;
+        writing = 1;
+        Serial.println("gameState 3 - knop 14 ingedrukt");
+        lastDebounceKnop14 = millis();
+  }
+
+ if (timerk10 > debounceDelay)  {
+        slave = 32;
+        writing = 1;
+        Serial.println("gameState 3 - knop 10 ingedrukt");
+        lastDebounceKnop10 = millis();
+  }
+
+   if (timerk19 > debounceDelay)  {
+        slave = 48;
+        writing = 1;
+        Serial.println("gameState 3 - knop 16 ingedrukt");
+        lastDebounceKnop19 = millis();
+  }
+
+ if ((timerk1 > debounceDelay)||(timerk2 > debounceDelay)||(timerk3 > debounceDelay)||(timerk4 > debounceDelay)||(timerk5 > debounceDelay)||(timerk6 > debounceDelay)||(timerk7 > debounceDelay)||(timerk8 > debounceDelay)||(timerk9 > debounceDelay)||(timerk11 > debounceDelay)||(timerk12 > debounceDelay)||(timerk13 > debounceDelay)||(timerk15 > debounceDelay)||(timerk16 > debounceDelay)||(timerk17 > debounceDelay)||(timerk18 > debounceDelay)||(timerk20 > debounceDelay)) {
+        if (timerwrong > knipperDelay){
+        slave = 101;
+        writing = 1;
+        Serial.println("gameState 3 - verkeerde knop ingedrukt");
+        lastDebounceWrong = millis();
+        }
+  }
+
+ if (master == 57){
+        digitalWrite(led7, HIGH);
+        master = 0;
+        Serial.println("gameState 3 - led 7 uitgeschakeld");
+}
+
+ if (master == 42){
+        digitalWrite(led10, HIGH);
+        master = 0;
+        Serial.println("gameState 3 - led 10 uitgeschakeld");
+}
+
+ if (master == 58){
+        digitalWrite(led16, HIGH);
+        master = 0;
+        Serial.println("gameState 3 - led 16 uitgeschakeld");
+}
+
+ if ((digitalRead(led7) == HIGH)&&(digitalRead(led10) == HIGH)&&(digitalRead(led16) == HIGH)){
+  if (ledcheck == 0){
+     slave = 121;
+        writing = 1;
+        Serial.println("gameState 3 - alle leds op S1 uit");
+      ledcheck = 1;
+  }
+  }
+}
+
+if (gameState == 4){
+
+if (knipper == 1){
+    digitalWrite(kleurled2, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 2;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 2){
+    digitalWrite(kleurled2, HIGH);
+    digitalWrite(kleurled4, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 3;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 3){
+    digitalWrite(kleurled4, HIGH);
+      digitalWrite(kleurled3, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 4;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 4){
+    digitalWrite(kleurled3, HIGH);
+      digitalWrite(kleurled1, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 5;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 5){
+    digitalWrite(kleurled1, HIGH);
+    if (timerknipper > knipperDelayLong)  {
+      knipper = 1;
+      lastDebounceKnipper = millis();
+     }
+ }
+
+  if (master == 133){
+        digitalWrite(kleurled1, HIGH);
+        digitalWrite(kleurled2, HIGH);
+        digitalWrite(kleurled3, HIGH);
+        digitalWrite(kleurled4, HIGH);
+        knipper = 0;
+        master = 0;
+        Serial.println("gameState 4 - knipperleds uitgeschakeld");
+  }
+
+if (groteknop == 1){
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+        groteknop = 2;
+        blockgk4 = 1;
+        lastDebounceBlockgk4 = millis();
+         }
+        }
+  }
+
+  if (groteknop == 2){  
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 3;
+        blockgk3 = 1;
+        lastDebounceBlockgk3 = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+        }
+  }
+
+  if (groteknop == 3){  
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 4;
+        blockgk1 = 1;
+        lastDebounceBlockgk1 = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+        }
+  }
+
+  if (groteknop == 4){
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 5;
+    //    blockgkall = 1;
+    //    lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+         groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+        }
+  }
+
+  if (groteknop == 5){
+    slave = 131;
+        writing = 1;
+        Serial.println("gameState 4 - knoppen voltooid");
+         lastDebounceKnipperB = millis();
+         knipperB = 1;
+         groteknop = 0;
+        
+  }
+}
+
+if (gameState == 5){
+ if (timerk6 > debounceDelay) {
+        slave = 59;
+        writing = 1;
+        Serial.println("gameState 5 - knop 6 ingedrukt");
+        lastDebounceKnop6 = millis();
+  }
+
+ if (timerk7 > debounceDelay)  {
+        slave = 49;
+        writing = 1;
+        Serial.println("gameState 5 - knop 7 ingedrukt");
+        lastDebounceKnop7 = millis();
+  }
+
+   if (timerk11 > debounceDelay)  {
+        slave = 22;
+        writing = 1;
+        Serial.println("gameState 5 - knop 11 ingedrukt");
+        lastDebounceKnop11 = millis();
+  }
+
+  if (timerk5 > debounceDelay)  {
+        slave = 65;
+        writing = 1;
+        Serial.println("gameState 5 - knop 5 ingedrukt");
+        lastDebounceKnop5 = millis();
+  }
+
+  if (timerk4 > debounceDelay)  {
+        slave = 23;
+        writing = 1;
+        Serial.println("gameState 5 - knop 4 ingedrukt");
+        lastDebounceKnop4 = millis();
+  }
+
+ if ((timerk1 > debounceDelay)||(timerk2 > debounceDelay)||(timerk3 > debounceDelay)||(timerk8 > debounceDelay)||(timerk9 > debounceDelay)||(timerk10 > debounceDelay)||(timerk12 > debounceDelay)||(timerk13 > debounceDelay)||(timerk14 > debounceDelay)||(timerk15 > debounceDelay)||(timerk15 > debounceDelay)||(timerk16 > debounceDelay)||(timerk17 > debounceDelay)||(timerk18 > debounceDelay)||(timerk19 > debounceDelay)||(timerk20 > debounceDelay)) {
+        if (timerwrong > knipperDelay){
+        slave = 101;
+        writing = 1;
+        Serial.println("gameState 5 - verkeerde knop ingedrukt");
+        lastDebounceWrong = millis();
+        }
+  }
+
+ if (master == 18){
+        digitalWrite(led2, HIGH);
+        master = 0;
+        Serial.println("gameState 5 - led 2 uitgeschakeld");
+}
+
+ if (master == 64){
+        digitalWrite(led9, HIGH);
+        master = 0;
+        Serial.println("gameState 5 - led 9 uitgeschakeld");
+}
+
+ if (master == 27){
+        digitalWrite(led18, HIGH);
+        master = 0;
+        Serial.println("gameState 5 - led 18 uitgeschakeld");
+} 
+
+ if (master == 73){
+        digitalWrite(led20, HIGH);
+        master = 0;
+        Serial.println("gameState 5 - led 20 uitgeschakeld");
+} 
+
+if ((digitalRead(led2) == HIGH)&&(digitalRead(led9) == HIGH)&&(digitalRead(led18) == HIGH)&&(digitalRead(led20) == HIGH)){
+  if (ledcheck == 0){
+     slave = 121;
+        writing = 1;
+        Serial.println("gameState 5 - alle leds op S1 uit");
+      ledcheck = 1;
+  }
+  }
+}
+
+if (gameState == 6){
+  if (knipper == 1){
+    digitalWrite(kleurled3, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 2;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 2){
+    digitalWrite(kleurled3, HIGH);
+    digitalWrite(kleurled4, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 3;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 3){
+    digitalWrite(kleurled4, HIGH);
+      digitalWrite(kleurled2, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 4;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+  else if (knipper == 4){
+    digitalWrite(kleurled2, HIGH);
+      digitalWrite(kleurled1, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 5;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 5){
+    digitalWrite(kleurled1, HIGH);
+      digitalWrite(kleurled3, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 6;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+  else if (knipper == 6){
+    digitalWrite(kleurled3, HIGH);
+    if (timerknipper > knipperDelayLong)  {
+      knipper = 1;
+      lastDebounceKnipper = millis();
+     }
+}
+
+  if (master == 133){
+        digitalWrite(kleurled1, HIGH);
+        digitalWrite(kleurled2, HIGH);
+        digitalWrite(kleurled3, HIGH);
+        digitalWrite(kleurled4, HIGH);
+        knipper = 0;
+        master = 0;
+        Serial.println("gameState 6 - knipperleds uitgeschakeld");
+  }
+
+if (groteknop == 1){
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 2;
+        blockgk2 = 1;
+        lastDebounceBlockgk2 = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+        }
+  }
+
+  if (groteknop == 2){  
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+        groteknop = 3;
+        blockgk4 = 1;
+        lastDebounceBlockgk4 = millis();
+         }
+        }
+  }
+
+  if (groteknop == 3){  
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 4;
+        blockgk1 = 1;
+        lastDebounceBlockgk1 = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+        }
+  }
+
+  if (groteknop == 4){
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+       lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+         groteknop = 5;
+        blockgk4 = 1;
+        lastDebounceBlockgk4 = millis();
+         }
+        }
+  }
+
+    if (groteknop == 5){
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+       lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 6;
+   //     blockgkall = 1;
+  //      lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+         groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+        }
+  }
+
+  if (groteknop == 6){
+    slave = 131;
+        writing = 1;
+        Serial.println("gameState 6 - knoppen voltooid");
+         lastDebounceKnipperB = millis();
+         knipperB = 1;
+         groteknop = 0;
+
+ 
+  }
+}
+
+if (gameState == 7){
+
+  if (timerk17 > debounceDelay) {
+        slave = 31;
+        writing = 1;
+        Serial.println("gameState 7 - knop 17 ingedrukt");
+        lastDebounceKnop17 = millis();
+  }
+
+ if (timerk1 > debounceDelay)  {
+        slave = 52;
+        writing = 1;
+        Serial.println("gameState 7 - knop 1 ingedrukt");
+        lastDebounceKnop1 = millis();
+  }
+
+   if (timerk20 > debounceDelay)  {
+        slave = 41;
+        writing = 1;
+        Serial.println("gameState 7 - knop 20 ingedrukt");
+        lastDebounceKnop20 = millis();
+  }
+
+  if (timerk12 > debounceDelay)  {
+        slave = 19;
+        writing = 1;
+        Serial.println("gameState 7 - knop 12 ingedrukt");
+        lastDebounceKnop12 = millis();
+  }
+
+  if (timerk9 > debounceDelay)  {
+        slave = 67;
+        writing = 1;
+        Serial.println("gameState 7 - knop 9 ingedrukt");
+        lastDebounceKnop9 = millis();
+  }
+
+  if (timerk15 > debounceDelay)  {
+        slave = 43;
+        writing = 1;
+        Serial.println("gameState 7 - knop 15 ingedrukt");
+        lastDebounceKnop15 = millis();
+  }
+
+ if ((timerk2 > debounceDelay)||(timerk3 > debounceDelay)||(timerk4 > debounceDelay)||(timerk5 > debounceDelay)||(timerk6 > debounceDelay)||(timerk7 > debounceDelay)||(timerk8 > debounceDelay)||(timerk10 > debounceDelay)||(timerk11 > debounceDelay)||(timerk13 > debounceDelay)||(timerk14 > debounceDelay)||(timerk16 > debounceDelay)||(timerk18 > debounceDelay)||(timerk19 > debounceDelay)) {
+        if (timerwrong > knipperDelay){
+        slave = 101;
+        writing = 1;
+        Serial.println("gameState 7 - verkeerde knop ingedrukt");
+        lastDebounceWrong = millis();
+        }
+  }
+
+ if (master == 76){
+        digitalWrite(led4, HIGH);
+        master = 0;
+        Serial.println("gameState 7 - led 4 uitgeschakeld");
+}
+
+ if (master == 79){
+        digitalWrite(led6, HIGH);
+        master = 0;
+        Serial.println("gameState 7 - led 6 uitgeschakeld");
+}
+
+ if (master == 54){
+        digitalWrite(led13, HIGH);
+        master = 0;
+        Serial.println("gameState 7 - led 13 uitgeschakeld");
+} 
+
+ if (master == 51){
+        digitalWrite(led14, HIGH);
+        master = 0;
+        Serial.println("gameState 7 - led 14 uitgeschakeld");
+} 
+
+  if (master == 99){
+        digitalWrite(led17, HIGH);
+        master = 0;
+        Serial.println("gameState 7 - led 17 uitgeschakeld");
+} 
+ 
+ if ((digitalRead(led4) == HIGH)&&(digitalRead(led6) == HIGH)&&(digitalRead(led13) == HIGH)&&(digitalRead(led14) == HIGH)&&(digitalRead(led17) == HIGH)){
+  if (ledcheck == 0){
+     slave = 121;
+        writing = 1;
+        Serial.println("gameState 7 - alle leds op S1 uit");
+        ledcheck = 1;
+  }
+  }
+}
+
+if (gameState == 8){
+  if (knipper == 1){
+    digitalWrite(kleurled2, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 2;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 2){
+    digitalWrite(kleurled2, HIGH);
+    digitalWrite(kleurled3, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 3;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 3){
+    digitalWrite(kleurled3, HIGH);
+      digitalWrite(kleurled4, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 4;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 4){
+    digitalWrite(kleurled4, HIGH);
+      digitalWrite(kleurled1, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 5;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+  else if (knipper == 5){
+    digitalWrite(kleurled1, HIGH);
+      digitalWrite(kleurled2, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 6;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+  else if (knipper == 6){
+    digitalWrite(kleurled2, HIGH);
+      digitalWrite(kleurled1, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 7;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 7){
+    digitalWrite(kleurled1, HIGH);
+    if (timerknipper > knipperDelayLong)  {
+      knipper = 1;
+      lastDebounceKnipper = millis();
+     }
+}
+
+  if (master == 133){
+        digitalWrite(kleurled1, HIGH);
+        digitalWrite(kleurled2, HIGH);
+        digitalWrite(kleurled3, HIGH);
+        digitalWrite(kleurled4, HIGH);
+        knipper = 0;
+        master = 0;
+        Serial.println("gameState 8 - knipperleds uitgeschakeld");
+  }
+
+if (groteknop == 1){
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+        groteknop = 2;
+        blockgk4 = 1;
+        lastDebounceBlockgk4 = millis();
+         }
+        }
+  }
+
+  if (groteknop == 2){  
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 3;
+        blockgk2 = 1;
+        lastDebounceBlockgk2 = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+        }
+  }
+
+  if (groteknop == 3){  
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 4;
+        blockgk3 = 1;
+        lastDebounceBlockgk3 = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+        }
+  }
+
+  if (groteknop == 4){
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 5;
+        blockgk1 = 1;
+        lastDebounceBlockgk1 = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+       lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+         groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+        }
+  }
+
+    if (groteknop == 5){
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+       lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+         groteknop = 6;
+        blockgk4 = 1;
+        lastDebounceBlockgk4 = millis();
+         }
+        }
+  }
+
+      if (groteknop == 6){
+    if (timergk1 > debounceDelay) {
+     if ((blockgk1 == 0)&&(blockgkall == 0)){
+        groteknop = 7;
+   //     blockgkall = 1;
+     //   lastDebounceBlockgkall = millis();
+         }
+    }
+    
+    if (timergk2 > debounceDelay) {
+     if ((blockgk2 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+       lastDebounceBlockgkall = millis();
+         }
+    }
+   
+    if (timergk3 > debounceDelay) {
+     if ((blockgk3 == 0)&&(blockgkall == 0)){
+        groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+    }
+
+    if (timergk4 > debounceDelay) {
+     if ((blockgk4 == 0)&&(blockgkall == 0)){
+         groteknop = 1;
+        blockgkall = 1;
+        lastDebounceBlockgkall = millis();
+         }
+        }
+  }
+
+  if (groteknop == 7){
+    slave = 131;
+        writing = 1;
+        Serial.println("gameState 8 - knoppen voltooid");
+         lastDebounceKnipperB = millis();
+         knipperB = 1;
+         groteknop = 0;
+
+ 
+  }
+}
+
+ if (gameState == 9){
+if (knipper == 1){
+digitalWrite(led1, HIGH);
+digitalWrite(led2, LOW);
+digitalWrite(led3, HIGH);
+digitalWrite(led4, LOW);
+digitalWrite(led5, HIGH);
+digitalWrite(led6, LOW);
+digitalWrite(led7, HIGH);
+digitalWrite(led8, LOW);
+digitalWrite(led9, HIGH);
+digitalWrite(led10, LOW);
+digitalWrite(led11, HIGH);
+digitalWrite(led12, LOW);
+digitalWrite(led13, HIGH);
+digitalWrite(led14, LOW);
+digitalWrite(led15, HIGH);
+digitalWrite(led16, LOW);
+digitalWrite(led17, HIGH);
+digitalWrite(led18, LOW);
+digitalWrite(led19, HIGH);
+digitalWrite(led20, LOW);
+digitalWrite(kleurled1, HIGH);
+digitalWrite(kleurled2, LOW);
+digitalWrite(kleurled3, HIGH);
+digitalWrite(kleurled4, LOW);
+digitalWrite(knopled1, HIGH);
+digitalWrite(knopled2, LOW);
+digitalWrite(knopled3, HIGH);
+digitalWrite(knopled4, LOW);
+    if (timerknipper > knipperDelay)  {
+      knipper = 2;
+      lastDebounceKnipper = millis();
+     }
+  }
+
+ else if (knipper == 2){
+digitalWrite(led1, LOW);
+digitalWrite(led2, HIGH);
+digitalWrite(led3, LOW);
+digitalWrite(led4, HIGH);
+digitalWrite(led5, LOW);
+digitalWrite(led6, HIGH);
+digitalWrite(led7, LOW);
+digitalWrite(led8, HIGH);
+digitalWrite(led9, LOW);
+digitalWrite(led10, HIGH);
+digitalWrite(led11, LOW);
+digitalWrite(led12, HIGH);
+digitalWrite(led13, LOW);
+digitalWrite(led14, HIGH);
+digitalWrite(led15, LOW);
+digitalWrite(led16, HIGH);
+digitalWrite(led17, LOW);
+digitalWrite(led18, HIGH);
+digitalWrite(led19, LOW);
+digitalWrite(led20, HIGH);
+digitalWrite(kleurled1, LOW);
+digitalWrite(kleurled2, HIGH);
+digitalWrite(kleurled3, LOW);
+digitalWrite(kleurled4, HIGH);
+digitalWrite(knopled1, LOW);
+digitalWrite(knopled2, HIGH);
+digitalWrite(knopled3, LOW);
+digitalWrite(knopled4, HIGH);
+    if (timerknipper > knipperDelay)  {
+      knipper = 1;
+      lastDebounceKnipper = millis();
+     }
+  }
+ }
+
+  delay(1);
+}
+
+
+
+void receiveEvent(int bytes) {
+  master = Wire.read();    // read one character from the I2C
+  Serial.println("Bericht van master ontvangen:");
+  Serial.println(master);
+}
+
+
+void requestEvent() {
+
+  if (writing == 1){
+  Wire.write(slave); // respond with message
+  Serial.println("Bericht aan master verstuurd:");
+  Serial.println(slave);
+  slave = 0;
+  writing = 0;
+   }
+     }
