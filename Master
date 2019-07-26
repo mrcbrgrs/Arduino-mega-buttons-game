@@ -1,0 +1,1352 @@
+#include <Wire.h>
+
+const int knop1 = 3; 
+const int knop2 = 4; 
+const int led = 8;
+const int empty = 9;
+const int energy1 = 10; 
+const int energy2 = 11; 
+const int energy3 = 12; 
+const int energy4 = 7; 
+
+int basicKnop1State = HIGH;
+int basicKnop2State = HIGH;
+
+int waarde = 0;
+int sendall = 0;
+int wrongbutton = 0;
+
+int pointsound = 0;
+int sendsound = 0;
+
+int receiveSlave1 = 0;
+int receiveSlave2 = 0;
+int receiveSlave3 = 0;
+int receiveSlave4 = 0;
+
+int statusSlave1 = 0;
+int statusSlave2 = 0;
+int statusSlave3 = 0;
+int statusSlave4 = 0;
+
+int statusComplete = 0;
+
+int gameState = 0;
+
+int receiveLoop = 0;
+
+int timeon = 0;
+
+unsigned long lastDebounceKnop1 = 0; 
+unsigned long lastDebounceKnop2 = 0; 
+unsigned long lastDebounceReceive = 0; 
+unsigned long lastDebounceSound = 0; 
+unsigned long lastDebounceReset = 0; 
+unsigned long lastDebounceWrongbutton = 0; 
+unsigned long lastDebounceComplete = 0; 
+unsigned long debounceDelay = 750; 
+unsigned long soundDelay = 1000;
+unsigned long resetDelay1 = 20000; 
+unsigned long resetDelay2 = 180000; //180000
+unsigned long wrongbuttonDelay = 5000; 
+unsigned long receiveDelay = 1; 
+unsigned long completeDelay = 3000; 
+unsigned long timeLimit = 1200000; //900000
+unsigned long runTime;
+unsigned long timeRemaining;
+
+void setup() {
+Wire.begin(); // join i2c bus (address optional for master)
+Serial.begin(9600);           // start serial for output
+
+digitalWrite(led, HIGH);
+digitalWrite(empty, HIGH);
+digitalWrite(energy1, HIGH);
+digitalWrite(energy2, HIGH);
+digitalWrite(energy3, HIGH);
+digitalWrite(energy4, HIGH);
+
+pinMode(knop1, INPUT);
+pinMode(knop2, INPUT);
+pinMode(led, OUTPUT);
+pinMode(energy1, OUTPUT);
+pinMode(energy2, OUTPUT);
+pinMode(energy3, OUTPUT);
+pinMode(energy4, OUTPUT);
+}
+
+void loop() {
+
+int readingKnop1 = digitalRead(knop1);
+int readingKnop2 = digitalRead(knop2);
+
+if (sendall == 1){
+        Wire.beginTransmission(1); // transmit to device #1
+        Wire.write(waarde);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+        delay(1); 
+        
+        Wire.beginTransmission(2); // transmit to device #2
+        Wire.write(waarde);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+        Wire.beginTransmission(3); // transmit to device #3
+        Wire.write(waarde);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+        Wire.beginTransmission(4); // transmit to device #4
+        Wire.write(waarde);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+        Wire.beginTransmission(5); // transmit to device #5
+        Wire.write(waarde);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+        Wire.beginTransmission(6); // transmit to device #6
+        Wire.write(waarde);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+        statusSlave1 = 0;
+        statusSlave2 = 0;
+        statusSlave3 = 0;
+        statusSlave4 = 0;
+        sendall = 0;
+}
+
+if (wrongbutton == 1){
+    if ((millis() - lastDebounceWrongbutton) > wrongbuttonDelay) {
+      wrongbutton = 0;
+      Serial.println("tijdblokkade verkeerde knop gestopt ");
+    }
+ }
+
+ if ((receiveSlave1 == 101)||(receiveSlave2 == 101)||(receiveSlave3 == 101)||(receiveSlave4 == 101)){
+
+
+ if (wrongbutton == 0){
+ Wire.beginTransmission(5); // transmit to device #5
+        Wire.write(101);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+   //     Wire.beginTransmission(6); // transmit to device #6
+     //   Wire.write(101);              // sends one byte
+    //    Wire.endTransmission();    // stop transmitting
+
+//  timeLimit = timeLimit - 5000;
+  Serial.println("verkeerde knop ingedrukt");
+  wrongbutton = 1;
+  lastDebounceWrongbutton = millis();
+}
+
+  
+
+ receiveSlave1 = 0;
+ receiveSlave2 = 0;
+ receiveSlave3 = 0;
+ receiveSlave4 = 0;
+
+}
+
+ if (readingKnop1 != basicKnop1State) {
+    // reset the debouncing timer
+    lastDebounceKnop1 = millis();
+  }
+
+  if ((millis() - lastDebounceKnop1) > debounceDelay) {
+     if (readingKnop1 == basicKnop1State) {
+
+        waarde = 200;
+        sendall = 1;
+        gameState = 0;
+        receiveLoop = 0;
+         timeon = 0;
+        lastDebounceKnop1 = millis();
+
+        Serial.println("Spel gereset");
+  }
+  }
+
+if (gameState == 0){
+  
+ statusSlave1 = 0;
+ statusSlave2 = 0;
+ statusSlave3 = 0;
+ statusSlave4 = 0;
+
+ receiveSlave1 = 0;
+ receiveSlave2 = 0;
+ receiveSlave3 = 0;
+ receiveSlave4 = 0;
+
+ sendsound = 0;
+
+ statusComplete = 0;
+
+ digitalWrite(led, HIGH);
+digitalWrite(energy1, HIGH);
+digitalWrite(energy2, HIGH);
+digitalWrite(energy3, HIGH);
+digitalWrite(energy4, HIGH);
+
+// sendall = 0;
+  receiveLoop = 0;
+ 
+  if (readingKnop2 != basicKnop2State) {
+    // reset the debouncing timer
+    lastDebounceKnop2 = millis();
+  }
+
+  if ((millis() - lastDebounceKnop2) > debounceDelay) {
+    if (readingKnop2 == basicKnop2State) {
+      Serial.println("startknop ingedrukt ");
+      
+         waarde = 201;
+        sendall = 1;
+         
+        Serial.println("Spel gestart");
+
+         gameState = 1;
+        lastDebounceReceive = millis();
+
+        runTime = millis();
+  timeon = 1;
+  
+        }
+  }
+}
+
+if(pointsound == 1){
+   Wire.beginTransmission(5); // transmit to device #5
+        Wire.write(102);              // sends one byte
+        Wire.endTransmission();    // stop transmittin
+        pointsound = 0;
+}
+
+if(pointsound == 2){
+   Wire.beginTransmission(5); // transmit to device #5
+        Wire.write(103);              // sends one byte
+        Wire.endTransmission();    // stop transmittin
+        pointsound = 0;
+}
+
+if(timeon == 1){
+if ((millis() - runTime) > timeLimit) {
+   receiveLoop = 0;
+   
+          Wire.beginTransmission(1); // transmit reto device #6
+        Wire.write(200);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+
+
+          Wire.beginTransmission(2); // transmit to device #6
+        Wire.write(200);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+ 
+
+          Wire.beginTransmission(3); // transmit to device #6
+        Wire.write(200);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+     
+
+          Wire.beginTransmission(4); // transmit to device #6
+        Wire.write(200);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+    
+          lastDebounceSound = millis(); 
+          sendsound = 2;      
+  
+        digitalWrite(led, HIGH);
+       lastDebounceReset = millis();
+              gameState = 25;
+  timeon = 2;
+}
+}
+
+if (sendsound == 2){
+ if ((millis() - lastDebounceSound) > soundDelay) {
+        Wire.beginTransmission(5); // transmit to device #5
+        Wire.write(210);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+  sendsound = 0;
+  Serial.println("audio loser verzonden");
+}
+}
+
+if(timeon == 2){
+    
+   receiveLoop = 0;
+    if ((millis() - lastDebounceReset) > resetDelay2) {
+      waarde = 200;
+       sendall = 1;
+        timeon = 0;
+          gameState = 0;
+}
+}
+
+
+if (gameState == 1){
+
+digitalWrite(led, LOW);
+
+//vanaf slave 1 
+ if (receiveSlave1 == 47){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+ if (receiveSlave1 == 81){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+//vanaf slave 2
+ if (receiveSlave2 == 13){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+ if (receiveSlave2 == 37){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+ if (receiveSlave2 == 33){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+//vanaf slave 3 
+ if (receiveSlave3 == 53){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 3 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave3);
+    pointsound = 1;
+}
+
+
+//vanaf slave 4 
+ if (receiveSlave4 == 29){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+}
+
+ if (receiveSlave4 == 44){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+}
+
+receiveLoop = 1;
+
+ if (receiveSlave1 == 121){
+  statusSlave1 = 1;
+ }
+
+ if (receiveSlave2 == 122){
+  statusSlave2 = 1;
+ }
+
+  if (receiveSlave3 == 123){
+  statusSlave3 = 1;
+ }
+
+  if (receiveSlave4 == 124){
+  statusSlave4 = 1;
+ }
+
+ if ((statusSlave1 == 1)&&(statusSlave2 == 1)&&(statusSlave3 == 1)&&(statusSlave4 == 1)){
+       waarde = 202;
+       pointsound = 0;
+        sendall = 1;
+        gameState = 2;  
+        lastDebounceSound = millis();       
+        Serial.println("Spel naar gameState 2");  
+ }
+}
+
+if (gameState == 2){
+
+  
+if (sendsound == 0){
+ if ((millis() - lastDebounceSound) > soundDelay) {
+        Wire.beginTransmission(5); // transmit to device #5
+        Wire.write(202);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+  sendsound = 1;
+ }
+}
+
+receiveLoop = 1;
+
+ if (receiveSlave1 == 131){
+  statusSlave1 = 2;
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 1 naar slave 3 verstuurd: ");
+  Serial.println(receiveSlave1);
+  pointsound = 2;
+ }
+
+ if (receiveSlave2 == 132){
+  statusSlave2 = 2;
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 2 naar slave 4 verstuurd: ");
+  Serial.println(receiveSlave2);
+  pointsound = 2;
+ }
+
+  if (receiveSlave3 == 133){
+  statusSlave3 = 2;
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 3 naar slave 1 verstuurd: ");
+  Serial.println(receiveSlave3);
+  pointsound = 2;
+ }
+
+  if (receiveSlave4 == 134){
+  statusSlave4 = 2;
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 4 naar slave 2 verstuurd: ");
+  Serial.println(receiveSlave4);
+  pointsound = 2;
+ }
+
+if (statusComplete == 0){
+ if ((statusSlave1 == 2)&&(statusSlave2 == 2)&&(statusSlave3 == 2)&&(statusSlave4 == 2)){
+
+lastDebounceComplete = millis();
+ statusComplete = 1;
+ }
+ }
+
+if (statusComplete == 1){
+    if ((millis() - lastDebounceComplete) > completeDelay) {
+  waarde = 203;
+        sendall = 1;
+         statusComplete = 0;
+        gameState = 3;  
+        pointsound = 0;   
+        sendsound = 0;    
+        lastDebounceSound = millis();
+        Serial.println("Spel naar gameState 3"); 
+        digitalWrite(energy1, LOW);
+
+}
+}
+}
+
+if (gameState == 3){
+
+  if (sendsound == 0){
+    if ((millis() - lastDebounceSound) > soundDelay) {
+        Wire.beginTransmission(5); // transmit to device #5
+        Wire.write(203);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+  sendsound = 1;
+    }
+}
+
+//vanaf slave 1
+   if (receiveSlave1 == 56){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+ if (receiveSlave1 == 32){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+ if (receiveSlave1 == 48){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+//vanaf slave 2
+   if (receiveSlave2 == 58){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+ if (receiveSlave2 == 94){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+ if (receiveSlave2 == 24){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+//vanaf slave 3
+   if (receiveSlave3 == 42){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 3 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave3);
+    pointsound = 1;
+}
+
+ if (receiveSlave3 == 14){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 3 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave3);
+    pointsound = 1;
+}
+
+ if (receiveSlave3 == 35){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 3 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave3);
+    pointsound = 1;
+}
+
+//vanaf slave 4
+   if (receiveSlave4 == 57){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+}
+
+ if (receiveSlave4 == 71){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+}
+
+ if (receiveSlave4 == 69){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+}
+
+receiveLoop = 1;
+
+ if (receiveSlave1 == 121){
+  statusSlave1 = 1;
+ }
+
+ if (receiveSlave2 == 122){
+  statusSlave2 = 1;
+ }
+
+  if (receiveSlave3 == 123){
+  statusSlave3 = 1;
+ }
+
+  if (receiveSlave4 == 124){
+  statusSlave4 = 1;
+ }
+
+ if ((statusSlave1 == 1)&&(statusSlave2 == 1)&&(statusSlave3 == 1)&&(statusSlave4 == 1)){
+
+       waarde = 204;
+        sendall = 1;
+        gameState = 4;         
+        pointsound = 0;
+         sendsound = 0;
+          lastDebounceSound = millis();
+        Serial.println("Spel naar gameState 4");  
+        
+ }
+}
+  
+
+if (gameState == 4){
+
+  if (sendsound == 0){
+ if ((millis() - lastDebounceSound) > soundDelay) {
+        Wire.beginTransmission(5); // transmit to device #5
+        Wire.write(204);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+  sendsound = 1;
+ }
+}
+
+receiveLoop = 1;
+
+ if (receiveSlave1 == 131){
+  statusSlave1 = 2;
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 1 naar slave 3 verstuurd: ");
+  Serial.println(receiveSlave1);
+  pointsound = 2;
+ }
+
+ if (receiveSlave2 == 132){
+  statusSlave2 = 2;
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 2 naar slave 4 verstuurd: ");
+  Serial.println(receiveSlave2);
+  pointsound = 2;
+ }
+
+  if (receiveSlave3 == 133){
+  statusSlave3 = 2;
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 3 naar slave 1 verstuurd: ");
+  Serial.println(receiveSlave3);
+  pointsound = 2;
+ }
+
+  if (receiveSlave4 == 134){
+  statusSlave4 = 2;
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 4 naar slave 2 verstuurd: ");
+  Serial.println(receiveSlave4);
+  pointsound = 2;
+ }
+
+
+ if (statusComplete == 0){
+ if ((statusSlave1 == 2)&&(statusSlave2 == 2)&&(statusSlave3 == 2)&&(statusSlave4 == 2)){
+
+lastDebounceComplete = millis();
+ statusComplete = 1;
+ }
+ }
+
+if (statusComplete == 1){
+    if ((millis() - lastDebounceComplete) > completeDelay) {
+  waarde = 205;
+        sendall = 1;
+      pointsound = 0;
+       sendsound = 0;
+         statusComplete = 0;
+        gameState = 5;         
+         lastDebounceSound = millis();
+        Serial.println("Spel naar gameState 5"); 
+        digitalWrite(energy2, LOW);
+}
+}
+}
+
+ if (gameState == 5){
+
+  if (sendsound == 0){
+  if ((millis() - lastDebounceSound) > soundDelay) {
+        Wire.beginTransmission(5); // transmit to device #5
+        Wire.write(205);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+  sendsound = 1;
+  }
+}
+
+// van slave1
+   if (receiveSlave1 == 59){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+if (receiveSlave1 == 49){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+ if (receiveSlave1 == 22){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+ if (receiveSlave1 == 65){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+ if (receiveSlave1 == 23){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+// van slave2
+   if (receiveSlave2 == 18){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+  if (receiveSlave2 == 64){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+  if (receiveSlave2 == 85){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+  if (receiveSlave2 == 61){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+  if (receiveSlave2 == 17){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+// van slave3
+   if (receiveSlave3 == 73){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 3 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave3);
+    pointsound = 1;
+}
+
+   if (receiveSlave3 == 72){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 3 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave3);
+    pointsound = 1;
+}
+
+   if (receiveSlave3 == 26){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 3 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave3);
+    pointsound = 1;
+}
+
+// van slave4
+   if (receiveSlave4 == 27){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+}
+
+   if (receiveSlave4 == 66){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+}
+
+   if (receiveSlave4 == 21){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+}
+
+
+receiveLoop = 1;
+
+ if (receiveSlave1 == 121){
+  statusSlave1 = 1;
+ }
+
+ if (receiveSlave2 == 122){
+  statusSlave2 = 1;
+ }
+
+  if (receiveSlave3 == 123){
+  statusSlave3 = 1;
+ }
+
+  if (receiveSlave4 == 124){
+  statusSlave4 = 1;
+ }
+
+ if ((statusSlave1 == 1)&&(statusSlave2 == 1)&&(statusSlave3 == 1)&&(statusSlave4 == 1)){
+
+       waarde = 206;
+       pointsound = 0;
+        sendsound = 0;
+        sendall = 1;
+        gameState = 6;         
+         lastDebounceSound = millis();
+        Serial.println("Spel naar gameState 6");  
+ }  
+}
+  
+
+if (gameState == 6){
+
+  if (sendsound == 0){
+  if ((millis() - lastDebounceSound) > soundDelay) {
+        Wire.beginTransmission(5); // transmit to device #5
+        Wire.write(206);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+  sendsound = 1;
+  }
+}
+
+receiveLoop = 1;
+
+ if (receiveSlave1 == 131){
+  statusSlave1 = 2;
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 1 naar slave 3 verstuurd: ");
+  Serial.println(receiveSlave1);
+  pointsound = 2;
+ }
+
+ if (receiveSlave2 == 132){
+  statusSlave2 = 2;
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 2 naar slave 4 verstuurd: ");
+  Serial.println(receiveSlave2);
+  pointsound = 2;
+ }
+
+  if (receiveSlave3 == 133){
+  statusSlave3 = 2;
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 3 naar slave 1 verstuurd: ");
+  Serial.println(receiveSlave3);
+  pointsound = 2;
+ }
+
+  if (receiveSlave4 == 134){
+  statusSlave4 = 2;
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 4 naar slave 2 verstuurd: ");
+  Serial.println(receiveSlave4);
+  pointsound = 2;
+ }
+
+if (statusComplete == 0){
+ if ((statusSlave1 == 2)&&(statusSlave2 == 2)&&(statusSlave3 == 2)&&(statusSlave4 == 2)){
+
+lastDebounceComplete = millis();
+ statusComplete = 1;
+ }
+ }
+
+if (statusComplete == 1){
+    if ((millis() - lastDebounceComplete) > completeDelay) {
+  waarde = 207;
+        sendall = 1;
+         statusComplete = 0;
+        gameState = 7;         
+        pointsound = 0;
+         lastDebounceSound = millis();
+         sendsound = 0;
+        Serial.println("Spel naar gameState 7"); 
+        digitalWrite(energy3, LOW);
+}
+}
+
+}
+
+ if (gameState == 7){
+
+  if (sendsound == 0){
+  if ((millis() - lastDebounceSound) > soundDelay) {
+        Wire.beginTransmission(5); // transmit to device #5
+        Wire.write(207);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+  sendsound = 1;
+  }
+}
+
+//van slave1
+     if (receiveSlave1 == 31){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+if (receiveSlave1 == 52){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+ if (receiveSlave1 == 41){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+ if (receiveSlave1 == 19){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+ if (receiveSlave1 == 67){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+ if (receiveSlave1 == 43){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 1 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave1);
+    pointsound = 1;
+}
+
+//van slave2
+     if (receiveSlave2 == 54){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+ if (receiveSlave2 == 62){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+ if (receiveSlave2 == 84){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 2 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave2);
+    pointsound = 1;
+}
+
+//van slave3
+     if (receiveSlave3 == 79){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 3 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave3);
+    pointsound = 1;
+}
+
+     if (receiveSlave3 == 51){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 3 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave3);
+    pointsound = 1;
+}
+
+     if (receiveSlave3 == 95){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 3 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave3);
+    pointsound = 1;
+}
+
+     if (receiveSlave3 == 12){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 3 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave3);
+    pointsound = 1;
+}
+
+     if (receiveSlave3 == 34){
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 3 naar slave 4 verstuurd: ");
+    Serial.println(receiveSlave3);
+    pointsound = 1;
+}
+
+//van slave4
+     if (receiveSlave4 == 76){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+}
+
+  if (receiveSlave4 == 46){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+}
+
+  if (receiveSlave4 == 74){
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 2 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+}
+
+  if (receiveSlave4 == 28){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+}
+
+  if (receiveSlave4 == 16){
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 3 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+  }
+
+    if (receiveSlave4 == 99){
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+    Serial.print("van slave 4 naar slave 1 verstuurd: ");
+    Serial.println(receiveSlave4);
+    pointsound = 1;
+}
+
+receiveLoop = 1;
+
+ if (receiveSlave1 == 121){
+  statusSlave1 = 1;
+ }
+
+ if (receiveSlave2 == 122){
+  statusSlave2 = 1;
+ }
+
+  if (receiveSlave3 == 123){
+  statusSlave3 = 1;
+ }
+
+  if (receiveSlave4 == 124){
+  statusSlave4 = 1;
+ }
+
+ if ((statusSlave1 == 1)&&(statusSlave2 == 1)&&(statusSlave3 == 1)&&(statusSlave4 == 1)){
+
+       waarde = 208;
+        sendall = 1;
+        gameState = 8;
+        pointsound = 0; 
+         sendsound = 0;        
+          lastDebounceSound = millis();
+        Serial.println("Spel naar gameState 8");  
+ }  
+  
+}
+  
+
+if (gameState == 8){
+
+  if (sendsound == 0){
+  if ((millis() - lastDebounceSound) > soundDelay) {
+        Wire.beginTransmission(5); // transmit to device #5
+        Wire.write(208);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+  sendsound = 1;
+  }
+}
+
+receiveLoop = 1;
+
+ if (receiveSlave1 == 131){
+  statusSlave1 = 2;
+  Wire.beginTransmission(3); // transmit to device #3
+  Wire.write(receiveSlave1);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 1 naar slave 3 verstuurd: ");
+  Serial.println(receiveSlave1);
+  pointsound = 2;
+ }
+
+ if (receiveSlave2 == 132){
+  statusSlave2 = 2;
+  Wire.beginTransmission(4); // transmit to device #4
+  Wire.write(receiveSlave2);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 2 naar slave 4 verstuurd: ");
+  Serial.println(receiveSlave2);
+  pointsound = 2;
+ }
+
+  if (receiveSlave3 == 133){
+  statusSlave3 = 2;
+  Wire.beginTransmission(1); // transmit to device #1
+  Wire.write(receiveSlave3);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 3 naar slave 1 verstuurd: ");
+  Serial.println(receiveSlave3);
+  pointsound = 2;
+ }
+
+  if (receiveSlave4 == 134){
+  statusSlave4 = 2;
+  Wire.beginTransmission(2); // transmit to device #2
+  Wire.write(receiveSlave4);              // sends one byte
+  Wire.endTransmission();    // stop transmitting
+  Serial.print("van slave 4 naar slave 2 verstuurd: ");
+  Serial.println(receiveSlave4);
+  pointsound = 2;
+ }
+
+if (statusComplete == 0){
+ if ((statusSlave1 == 2)&&(statusSlave2 == 2)&&(statusSlave3 == 2)&&(statusSlave4 == 2)){
+
+lastDebounceComplete = millis();
+ statusComplete = 1;
+ }
+ }
+
+if (statusComplete == 1){
+    if ((millis() - lastDebounceComplete) > completeDelay) {
+  waarde = 209;
+        sendall = 1;
+         statusComplete = 0;
+          lastDebounceSound = millis();
+         pointsound = 0;
+          sendsound = 0;
+        gameState = 9;         
+        Serial.println("Spel naar gameState 9"); 
+        lastDebounceReset = millis();
+        digitalWrite(energy4, LOW);
+}
+}
+}
+
+ if (gameState == 9){
+
+  if (sendsound == 0){
+ if ((millis() - lastDebounceSound) > soundDelay) {
+        Wire.beginTransmission(5); // transmit to device #5
+        Wire.write(209);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+  sendsound = 1;
+  timeon = 0;
+}
+  }
+   digitalWrite(led, HIGH);
+   receiveLoop = 0;
+
+    if ((millis() - lastDebounceReset) > resetDelay1) {
+  
+      Wire.beginTransmission(1); // transmit to device #1
+        Wire.write(200);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+        delay(1); 
+        
+        Wire.beginTransmission(2); // transmit to device #2
+        Wire.write(200);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+        Wire.beginTransmission(3); // transmit to device #3
+        Wire.write(200);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+        Wire.beginTransmission(4); // transmit to device #4
+        Wire.write(200);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+        Wire.beginTransmission(5); // transmit to device #6
+        Wire.write(200);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+
+    }
+
+    if ((millis() - lastDebounceReset) > resetDelay2) {
+      Wire.beginTransmission(6); // transmit to device #6
+        Wire.write(200);              // sends one byte
+        Wire.endTransmission();    // stop transmitting
+            gameState = 0;
+            
+    }
+}
+
+
+if (receiveLoop == 1){
+   Wire.requestFrom(1, 3);    // request 1 bytes from slave device #1
+  receiveSlave1 = Wire.read(); // receive a byte as character
+
+ // delay(5);
+
+  Wire.requestFrom(2, 3);    // request 1 bytes from slave device #2
+  receiveSlave2 = Wire.read(); // receive a byte as character
+
+ // delay(5);
+
+  Wire.requestFrom(3, 3);    // request 1 bytes from slave device #3
+  receiveSlave3 = Wire.read(); // receive a byte as character
+
+ // delay(5);
+
+  Wire.requestFrom(4, 3);    // request 1 bytes from slave device #4
+  receiveSlave4 = Wire.read(); // receive a byte as character
+  
+}
+delay(1);
+}
